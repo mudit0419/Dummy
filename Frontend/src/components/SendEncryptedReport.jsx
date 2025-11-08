@@ -19,10 +19,17 @@ const SendEncryptedReport = ({ patientId }) => {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
+  const [hasKeys, setHasKeys] = useState(false);
 
   useEffect(() => {
     fetchDoctors();
-  }, []);
+    checkKeys();
+  }, [patientId]);
+
+  const checkKeys = () => {
+    const signingKey = localStorage.getItem(`privateKey_${patientId}_signing`);
+    setHasKeys(!!signingKey);
+  };
 
   const fetchDoctors = async () => {
     try {
@@ -33,6 +40,7 @@ const SendEncryptedReport = ({ patientId }) => {
       setDoctors(response.data.doctors);
     } catch (err) {
       console.error('Error fetching doctors:', err);
+      setError('Failed to load doctors list');
     }
   };
 
@@ -53,6 +61,11 @@ const SendEncryptedReport = ({ patientId }) => {
       return;
     }
 
+    if (!hasKeys) {
+      setError('Please generate encryption keys first');
+      return;
+    }
+
     setLoading(true);
     setError('');
     setStatus('Reading file...');
@@ -62,7 +75,7 @@ const SendEncryptedReport = ({ patientId }) => {
       const fileData = await readFileAsArrayBuffer(file);
       setStatus('Fetching doctor\'s public key...');
 
-      // 2. Fetch doctor's public key
+      // 2. Fetch doctor's public key - FIXED URL
       const keyResponse = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/keys/doctor/${selectedDoctor}/public`,
         { withCredentials: true }
@@ -136,6 +149,23 @@ const SendEncryptedReport = ({ patientId }) => {
       setLoading(false);
     }
   };
+
+  if (!hasKeys) {
+    return (
+      <div className="bg-yellow-50 border-l-4 border-yellow-400 p-6 rounded-lg">
+        <p className="text-yellow-700 font-semibold mb-2">⚠️ Keys Not Generated</p>
+        <p className="text-yellow-600 mb-4">
+          You need to generate encryption keys before you can send encrypted reports.
+        </p>
+        <button
+          onClick={() => window.location.href = '/generate-keys'}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+        >
+          Generate Keys Now
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md max-w-2xl mx-auto">

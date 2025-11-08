@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
   generateEncryptionKeyPair,
@@ -14,7 +14,29 @@ const GenerateKeys = ({ userType, userId }) => {
   const [error, setError] = useState('');
   const [keysGenerated, setKeysGenerated] = useState(false);
 
+  useEffect(() => {
+    // Check if keys already exist
+    const checkExistingKeys = () => {
+      const encryptionKey = localStorage.getItem(`privateKey_${userId}_encryption`);
+      const signingKey = localStorage.getItem(`privateKey_${userId}_signing`);
+      
+      if (encryptionKey && signingKey) {
+        setKeysGenerated(true);
+        setStatus('Keys already generated');
+      }
+    };
+    
+    if (userId) {
+      checkExistingKeys();
+    }
+  }, [userId]);
+
   const handleGenerateKeys = async () => {
+    if (!userId) {
+      setError('User ID is required');
+      return;
+    }
+
     setLoading(true);
     setError('');
     setStatus('Generating encryption key pair...');
@@ -38,8 +60,8 @@ const GenerateKeys = ({ userType, userId }) => {
 
       // 5. Store private keys securely (client-side)
       setStatus('Storing private keys securely...');
-      await storePrivateKeySecurely(encryptionPrivateKeyJWK, 'user-password', `${userId}_encryption`);
-      await storePrivateKeySecurely(signingPrivateKeyJWK, 'user-password', `${userId}_signing`);
+      storePrivateKeySecurely(encryptionPrivateKeyJWK, `${userId}_encryption`);
+      storePrivateKeySecurely(signingPrivateKeyJWK, `${userId}_signing`);
 
       // 6. Upload public keys to server
       setStatus('Uploading public keys to server...');
@@ -61,6 +83,7 @@ const GenerateKeys = ({ userType, userId }) => {
         encryptionPrivateKey: encryptionPrivateKeyJWK,
         signingPrivateKey: signingPrivateKeyJWK,
         userId,
+        userType,
         timestamp: new Date().toISOString()
       });
 
@@ -130,6 +153,15 @@ const GenerateKeys = ({ userType, userId }) => {
           <p className="text-sm text-green-600 mt-2">
             Your private keys have been backed up. You can now securely send and receive encrypted reports.
           </p>
+          <button
+            onClick={() => {
+              setKeysGenerated(false);
+              setStatus('');
+            }}
+            className="mt-4 text-blue-600 hover:underline text-sm"
+          >
+            Regenerate Keys
+          </button>
         </div>
       )}
 
@@ -139,7 +171,7 @@ const GenerateKeys = ({ userType, userId }) => {
         </div>
       )}
 
-      {status && !loading && !keysGenerated && (
+      {status && !loading && !keysGenerated && !error && (
         <div className="mt-4 text-gray-600">
           <p>{status}</p>
         </div>

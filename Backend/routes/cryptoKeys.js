@@ -12,9 +12,9 @@ const {
 router.post('/upload', verifyToken, uploadPublicKey);
 
 // Get public key by user ID
-router.get('/:userId', getPublicKey);
+router.get('/user/:userId/public', getPublicKey);
 
-// Get doctor's public key specifically
+// Get doctor's public key specifically (THIS WAS MISSING)
 router.get('/doctor/:doctorId/public', getDoctorPublicKey);
 
 // Revoke public keys
