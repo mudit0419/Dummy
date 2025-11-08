@@ -239,6 +239,24 @@ const UserProfile = ({ isLoggedIn, user, onLogout }) => {
                     Edit Profile
                   </Link>
                 )}
+
+                {/* Added encrypted report links */}
+                {isDoctor && (
+                  <Link to="/view-encrypted-reports">
+                    <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md">
+                      🔒 View Encrypted Reports
+                    </button>
+                  </Link>
+                )}
+
+                {isPatient && (
+                  <Link to="/send-encrypted-report">
+                    <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
+                      🔒 Send Encrypted Report
+                    </button>
+                  </Link>
+                )}
+
                 <button
                   onClick={handleLogout}
                   className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full shadow"

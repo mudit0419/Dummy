@@ -3,6 +3,10 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import HomePage from "./components/HomePage";
 import PatientProfile from './components/PatientProfile';
 import DoctorProfile from './components/DoctorProfile';
+// ✅ ADDED: New imports for encryption components
+import GenerateKeys from './components/GenerateKeys';
+import SendEncryptedReport from './components/SendEncryptedReport';
+import ViewEncryptedReports from './components/ViewEncryptedReports';
 import { useEffect, useState } from "react";
 
 import FileUpload from "./components/FileUpload.jsx";
@@ -85,6 +89,11 @@ const handleLogout = () => {
         />
         <Route path="/patient/profile/:id" element={<PatientProfile />} />
         <Route path="/doctor/profile/:id" element={<DoctorProfile />} />
+        {/* // ✅ ADDED: Three new routes (inside <Routes>) */}
+<Route path="/generate-keys" element={<GenerateKeys />} />
+<Route path="/send-encrypted-report" element={<SendEncryptedReport />} />
+<Route path="/view-encrypted-reports" element={<ViewEncryptedReports />} />
+        
 
       </Routes>
       
